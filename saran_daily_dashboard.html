@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0a0a0f"/>
+<title>Saran — Daily Command</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1c1c26;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #f0efe8;
+  --muted: rgba(240,239,232,0.45);
+  --dim: rgba(240,239,232,0.2);
+
+  --maang: #7f77dd;
+  --maang-bg: rgba(127,119,221,0.12);
+  --maang-border: rgba(127,119,221,0.3);
+
+  --ghost: #d85a30;
+  --ghost-bg: rgba(216,90,48,0.12);
+  --ghost-border: rgba(216,90,48,0.3);
+
+  --visa: #ba7517;
+  --visa-bg: rgba(186,117,23,0.12);
+  --visa-border: rgba(186,117,23,0.3);
+
+  --pulse: #378add;
+  --pulse-bg: rgba(55,138,221,0.12);
+  --pulse-border: rgba(55,138,221,0.3);
+
+  --linkedin: #639922;
+  --linkedin-bg: rgba(99,153,34,0.12);
+  --linkedin-border: rgba(99,153,34,0.3);
+
+  --physical: #1d9e75;
+  --physical-bg: rgba(29,158,117,0.12);
+  --physical-border: rgba(29,158,117,0.3);
+
+  --admin: #888780;
+  --admin-bg: rgba(136,135,128,0.1);
+  --admin-border: rgba(136,135,128,0.25);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* ── HEADER ── */
+.header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(10,10,15,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px 12px;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.brand { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.date-pill {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 4px 10px; color: var(--muted);
+}
+.notify-btn {
+  font-size: 11px; font-family: 'DM Mono', monospace;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 4px 10px; color: var(--muted);
+  cursor: pointer; transition: all 0.2s;
+}
+.notify-btn.on { color: var(--physical); border-color: var(--physical-border); background: var(--physical-bg); }
+
+/* ── DAY TABS ── */
+.day-tabs {
+  display: flex; gap: 4px; overflow-x: auto;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.day-tabs::-webkit-scrollbar { display: none; }
+.day-tab {
+  flex-shrink: 0; padding: 6px 12px; border-radius: 8px; font-size: 12px;
+  font-weight: 500; border: 1px solid transparent; cursor: pointer;
+  color: var(--muted); background: transparent; transition: all 0.18s;
+  font-family: 'DM Sans', sans-serif;
+}
+.day-tab:hover { background: var(--surface2); color: var(--text); }
+.day-tab.active {
+  background: var(--surface2); color: var(--text);
+  border-color: var(--border2);
+}
+.day-tab.today { position: relative; }
+.day-tab.today::after {
+  content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--physical);
+}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap { padding: 12px 16px 0; }
+.progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.progress-label { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+.progress-count { font-size: 13px; font-weight: 500; font-family: 'DM Mono', monospace; color: var(--text); }
+.progress-track { height: 3px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; background: var(--physical); transition: width 0.4s cubic-bezier(.4,0,.2,1); }
+
+/* ── STATS ROW ── */
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; padding: 12px 16px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.stat-label { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.stat-val { font-size: 20px; font-weight: 600; font-family: 'Syne', sans-serif; }
+
+/* ── BLOCKS ── */
+.blocks { padding: 0 16px 100px; display: flex; flex-direction: column; gap: 6px; }
+
+.section-label {
+  font-size: 10px; font-family: 'DM Mono', monospace; font-weight: 500;
+  color: var(--dim); letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 12px 0 4px;
+}
+
+.block {
+  border-radius: 12px; padding: 12px 14px;
+  border: 1px solid transparent;
+  display: flex; align-items: flex-start; gap: 11px;
+  cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+  position: relative; overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.block:active { transform: scale(0.985); }
+.block.done { opacity: 0.35; }
+.block.done .block-title { text-decoration: line-through; }
+
+.block-check {
+  width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0; margin-top: 1px;
+  border: 1.5px solid; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.block.done .block-check { background: currentColor; }
+.checkmark { width: 10px; height: 10px; opacity: 0; transition: opacity 0.15s; }
+.block.done .checkmark { opacity: 1; }
+
+.block-body { flex: 1; min-width: 0; }
+.block-title { font-size: 14px; font-weight: 500; line-height: 1.35; margin-bottom: 2px; }
+.block-time { font-size: 11px; font-family: 'DM Mono', monospace; opacity: 0.6; margin-bottom: 4px; }
+.block-note { font-size: 12px; opacity: 0.65; line-height: 1.45; }
+
+.block-dur {
+  font-size: 10px; font-family: 'DM Mono', monospace; font-weight: 500;
+  padding: 3px 8px; border-radius: 20px; flex-shrink: 0; align-self: flex-start;
+  opacity: 0.8;
+}
+
+/* ── WALL BLOCK ── */
+.wall-block {
+  background: var(--physical-bg); border: 1px solid var(--physical-border);
+  border-radius: 12px; padding: 14px 16px; margin: 4px 0;
+  display: flex; align-items: center; gap: 10px;
+}
+.wall-icon { font-size: 18px; }
+.wall-text { flex: 1; }
+.wall-title { font-size: 13px; font-weight: 500; color: var(--physical); font-family: 'Syne', sans-serif; }
+.wall-sub { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+/* ── NEXT UP TOAST ── */
+.next-up {
+  position: fixed; bottom: 16px; left: 16px; right: 16px; z-index: 100;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+}
+.next-up.hidden { transform: translateY(80px); opacity: 0; pointer-events: none; }
+.next-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--physical); flex-shrink: 0; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.next-label { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; }
+.next-title { font-size: 13px; font-weight: 500; }
+.next-time { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); margin-left: auto; flex-shrink: 0; }
+
+/* ── CAT COLORS ── */
+.cat-maang     { --c: var(--maang);    --cbg: var(--maang-bg);    --cbr: var(--maang-border); }
+.cat-ghost     { --c: var(--ghost);    --cbg: var(--ghost-bg);    --cbr: var(--ghost-border); }
+.cat-visa      { --c: var(--visa);     --cbg: var(--visa-bg);     --cbr: var(--visa-border); }
+.cat-pulse     { --c: var(--pulse);    --cbg: var(--pulse-bg);    --cbr: var(--pulse-border); }
+.cat-linkedin  { --c: var(--linkedin); --cbg: var(--linkedin-bg); --cbr: var(--linkedin-border); }
+.cat-physical  { --c: var(--physical); --cbg: var(--physical-bg); --cbr: var(--physical-border); }
+.cat-admin     { --c: var(--admin);    --cbg: var(--admin-bg);    --cbr: var(--admin-border); }
+
+.block { background: var(--cbg); border-color: var(--cbr); color: var(--c); }
+.block-check { border-color: var(--c); color: var(--bg); }
+.block-title, .block-note { color: var(--text); }
+.block-time { color: var(--c); }
+.block-dur { background: rgba(255,255,255,0.07); color: var(--c); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="brand">Saran · Daily</span>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <span class="date-pill" id="datePill"></span>
+      <button class="notify-btn" id="notifyBtn" onclick="toggleNotifications()">🔔 reminders</button>
+    </div>
+  </div>
+  <div class="day-tabs" id="dayTabs"></div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-header">
+    <span class="progress-label">today's progress</span>
+    <span class="progress-count" id="progressCount">0 / 0</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<div class="stats-row" id="statsRow"></div>
+<div class="blocks" id="blocks"></div>
+
+<div class="next-up hidden" id="nextUp">
+  <div class="next-dot"></div>
+  <div style="flex:1;min-width:0;">
+    <div class="next-label">up next</div>
+    <div class="next-title" id="nextTitle">—</div>
+  </div>
+  <div class="next-time" id="nextTime">—</div>
+</div>
+
+<script>
+// ── SCHEDULE DATA ──
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAY_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function mL(m) {
+  const h = Math.floor(m/60), r = m%60;
+  return h && r ? h+'h '+r+'m' : h ? h+'h' : r+'m';
+}
+
+// Each day: array of {section?} or {time, dur(mins), label, cat, icon, note}
+// cat: maang | ghost | visa | pulse | linkedin | physical | admin
+const SCHEDULE = {
+  Mon: [
+    {section:'Morning'},
+    {time:'8:00', dur:30, label:'Wake + breakfast + plan', cat:'admin', icon:'☕', note:'Write 3 priorities. Check Ghost Apply DAG ran overnight.'},
+    {time:'8:30', dur:45, label:'LinkedIn post — write & publish', cat:'linkedin', icon:'✍️', note:'Category: Personal brand / project highlight. Publish before 10 AM.'},
+    {time:'9:15', dur:15, label:'Ghost Apply — trigger today\'s apps', cat:'ghost', icon:'🚀', note:'Fire 10 apps. Spot-check 1–2 cover letters before sending.'},
+    {section:'Deep work — DSA'},
+    {time:'9:30', dur:120, label:'MAANG — DSA (arrays & graphs)', cat:'maang', icon:'🧠', note:'2 LeetCode mediums. Brute force → optimize → clean code. No editorial until you try.'},
+    {time:'11:30', dur:30, label:'Ghost Apply — QA & recruiter replies', cat:'ghost', icon:'📬', note:'Scan 10 sent apps. Reply to any recruiter messages. Log updates.'},
+    {section:'Midday'},
+    {time:'12:00', dur:30, label:'Lunch', cat:'admin', icon:'🍱', note:'Screen off.'},
+    {time:'12:30', dur:90, label:'VisaBridge dev — Screen 4', cat:'visa', icon:'🛂', note:'Training plan wizard. Commit at least 1 feature. Push to Vercel before ending.'},
+    {time:'2:00',  dur:15, label:'Walk / reset', cat:'admin', icon:'🚶', note:'Mandatory. Eyes off screen.'},
+    {section:'Afternoon'},
+    {time:'2:15',  dur:75, label:'PulseTrack — Gold layer build', cat:'pulse', icon:'💡', note:'Run printSchema() first. Build next Gold table + write tests.'},
+    {time:'3:30',  dur:60, label:'Ghost Apply — DAG debug & prompt tuning', cat:'ghost', icon:'🔧', note:'Fix pipeline bugs, tune Groq prompts, Apollo filter updates, cost audit.'},
+    {time:'4:30',  dur:30, label:'MAANG — STAR story practice (behavioral)', cat:'maang', icon:'🎯', note:'Pick 1 story. Speak it out loud. Time yourself. Record + replay.'},
+    {time:'5:00',  dur:30, label:'EOD wrap + Ghost Apply stats', cat:'ghost', icon:'📊', note:'Final stats. Queue tomorrow\'s targets. Clear inbox.'},
+    {wall:true},
+  ],
+  Tue: [
+    {section:'Morning'},
+    {time:'8:00', dur:30, label:'Wake + breakfast + plan', cat:'admin', icon:'☕', note:'Write 3 priorities. Check overnight Ghost Apply run.'},
+    {time:'8:30', dur:45, label:'LinkedIn post — write & publish', cat:'linkedin', icon:'✍️', note:'Category: Technical insight (Databricks / Delta Lake / Kafka). Publish before 10 AM.'},
+    {time:'9:15', dur:15, label:'Ghost Apply — trigger + check batch', cat:'ghost', icon:'🚀', note:'Fire today\'s 10 apps. Verify JD scrape quality on 2 random entries.'},
+    {section:'Deep work — DP & Trees'},
+    {time:'9:30', dur:120, label:'MAANG — DSA (dynamic programming)', cat:'maang', icon:'🧠', note:'DP patterns: memoization → tabulation. LeetCode house robber, coin change variants.'},
+    {time:'11:30', dur:30, label:'Ghost Apply — recruiter reply + tracker', cat:'ghost', icon:'📬', note:'Reply to any replies. Update application status tracker.'},
+    {section:'Midday'},
+    {time:'12:00', dur:30, label:'Lunch', cat:'admin', icon:'🍱', note:'Screen off.'},
+    {time:'12:30', dur:90, label:'PulseTrack — Gold layer (Snowflake schema)', cat:'pulse', icon:'💡', note:'Focus: normalized ICD-10 hierarchy or drug class dim. Full tests required.'},
+    {time:'2:00',  dur:15, label:'Walk / reset', cat:'admin', icon:'🚶', note:'Mandatory.'},
+    {section:'Afternoon'},
+    {time:'2:15',  dur:75, label:'VisaBridge — UI polish + bug fixes', cat:'visa', icon:'🛂', note:'E-Verify lookup QA, localStorage recall, phone/EIN formatters. Pixel-perfect.'},
+    {time:'3:30',  dur:60, label:'Ghost Apply — cost optimization', cat:'ghost', icon:'🔧', note:'Combine tailor_resume + write_cover_letter into 1 JSON call. Track cost delta.'},
+    {time:'4:30',  dur:30, label:'MAANG — System design sketch (databases)', cat:'maang', icon:'🎯', note:'Sketch: design a read-heavy analytics platform. Focus on storage layer decisions.'},
+    {time:'5:00',  dur:30, label:'EOD wrap + LinkedIn DM replies', cat:'ghost', icon:'📊', note:'Reply LinkedIn DMs. Ghost Apply stats. Queue tomorrow.'},
+    {wall:true},
+  ],
+  Wed: [
+    {section:'Morning'},
+    {time:'8:00', dur:30, label:'Wake + breakfast + plan', cat:'admin', icon:'☕', note:'3 priorities. Ghost Apply check.'},
+    {time:'8:30', dur:45, label:'LinkedIn post — write & publish', cat:'linkedin', icon:'✍️', note:'Category: Job search / OPT / visa journey. Authentic + honest. Publish before 10 AM.'},
+    {time:'9:15', dur:15, label:'Ghost Apply — trigger apps', cat:'ghost', icon:'🚀', note:'10 apps. Spot-check cover letter on 2 cap-exempt or healthcare targets.'},
+    {section:'Deep work — Graphs & Backtracking'},
+    {time:'9:30', dur:120, label:'MAANG — DSA (graphs + BFS/DFS)', cat:'maang', icon:'🧠', note:'Graph traversal, shortest path, cycle detection. Aim to solve 2 mediums clean.'},
+    {time:'11:30', dur:30, label:'Ghost Apply — mid-week pipeline QA', cat:'ghost', icon:'📬', note:'Check week-to-date stats. Fix any broken scrapers. Log recruiter activity.'},
+    {section:'Midday'},
+    {time:'12:00', dur:30, label:'Lunch', cat:'admin', icon:'🍱', note:'Screen off.'},
+    {time:'12:30', dur:90, label:'VisaBridge — Screen 4 training plan build', cat:'visa', icon:'🛂', note:'Core wizard logic. CIP codes strict DHS list only. localStorage save/recall.'},
+    {time:'2:00',  dur:15, label:'Walk / reset', cat:'admin', icon:'🚶', note:'Mandatory.'},
+    {section:'Afternoon'},
+    {time:'2:15',  dur:75, label:'PulseTrack — fact table build', cat:'pulse', icon:'💡', note:'fact_vitals or fact_medication_event. Surrogate keys with F.abs(F.hash(col)).cast("long").'},
+    {time:'3:30',  dur:60, label:'Ghost Apply — Apollo filter refinement', cat:'ghost', icon:'🔧', note:'Refine employer targets: healthcare, fintech, cap-exempt. Drop no-OPT firms.'},
+    {time:'4:30',  dur:30, label:'MAANG — STAR story (leadership / conflict)', cat:'maang', icon:'🎯', note:'Pick a conflict story. Structure: situation → tension → your move → outcome.'},
+    {time:'5:00',  dur:30, label:'EOD wrap + Ghost Apply stats', cat:'ghost', icon:'📊', note:'Stats. Queue tomorrow. Clear inbox.'},
+    {wall:true},
+  ],
+  Thu: [
+    {section:'Morning'},
+    {time:'8:00', dur:30, label:'Wake + breakfast + plan', cat:'admin', icon:'☕', note:'3 priorities. Check Ghost Apply.'},
+    {time:'8:30', dur:45, label:'LinkedIn post — write & publish', cat:'linkedin', icon:'✍️', note:'Category: Data engineering tutorial / how-I-built. Publish before 10 AM.'},
+    {time:'9:15', dur:15, label:'Ghost Apply — trigger apps', cat:'ghost', icon:'🚀', note:'Fire 10 apps. Verify Groq output quality on 2 entries.'},
+    {section:'Deep work — Heaps & Sliding Window'},
+    {time:'9:30', dur:120, label:'MAANG — DSA (heaps, sliding window)', cat:'maang', icon:'🧠', note:'Top-K problems, median stream, variable window patterns. 2 mediums minimum.'},
+    {time:'11:30', dur:30, label:'Ghost Apply — recruiter replies + log', cat:'ghost', icon:'📬', note:'Reply + track. Note any interview requests.'},
+    {section:'Midday'},
+    {time:'12:00', dur:30, label:'Lunch', cat:'admin', icon:'🍱', note:'Screen off.'},
+    {time:'12:30', dur:90, label:'PulseTrack — Gold layer (streaming joins)', cat:'pulse', icon:'💡', note:'Kappa architecture joins. Real-time IoT health telemetry aggregation Gold table.'},
+    {time:'2:00',  dur:15, label:'Walk / reset', cat:'admin', icon:'🚶', note:'Mandatory.'},
+    {section:'Afternoon'},
+    {time:'2:15',  dur:75, label:'VisaBridge — criteria 1/2 screens', cat:'visa', icon:'🛂', note:'O-1A criteria 1 and 2 wizard steps. Validation + error states. Push to Vercel.'},
+    {time:'3:30',  dur:60, label:'Ghost Apply — LinkedIn outreach DAG', cat:'ghost', icon:'🔧', note:'linkedin_connector.py + linkedin_dag.py. Tier 1/2: omit visa. Tier 3: lead with OPT.'},
+    {time:'4:30',  dur:30, label:'MAANG — System design (streaming pipeline)', cat:'maang', icon:'🎯', note:'Design real-time event pipeline. Kafka → Spark → Delta Lake → serving layer.'},
+    {time:'5:00',  dur:30, label:'EOD wrap + Ghost Apply stats', cat:'ghost', icon:'📊', note:'Stats, tomorrow queue, clear inbox.'},
+    {wall:true},
+  ],
+  Fri: [
+    {section:'Morning'},
+    {time:'8:00', dur:30, label:'Wake + breakfast + plan', cat:'admin', icon:'☕', note:'3 priorities. End-of-week mindset: close loops, no new rabbit holes.'},
+    {time:'8:30', dur:45, label:'LinkedIn post — write & publish', cat:'linkedin', icon:'✍️', note:'Category: Weekend reflection / wins this week. Publish before 10 AM.'},
+    {time:'9:15', dur:15, label:'Ghost Apply — trigger + week-end check', cat:'ghost', icon:'🚀', note:'Final 10 apps of the week. Check weekly total hit 50.'},
+    {section:'Deep work — Tries & Bit Manipulation'},
+    {time:'9:30', dur:120, label:'MAANG — DSA (tries, bit manipulation)', cat:'maang', icon:'🧠', note:'Trie prefix problems, XOR patterns. 2 problems. Aim for first-attempt clean solution.'},
+    {time:'11:30', dur:30, label:'Ghost Apply — week summary + recruiter QA', cat:'ghost', icon:'📬', note:'Reply all pending. Log weekly stats: apps sent, replies, interviews, cost.'},
+    {section:'Midday'},
+    {time:'12:00', dur:30, label:'Lunch', cat:'admin', icon:'🍱', note:'Screen off.'},
+    {time:'12:30', dur:90, label:'VisaBridge — criteria 5 & 7 screens', cat:'visa', icon:'🛂', note:'Phase completions. Validation, localStorage, Vercel deploy. QA all previous screens.'},
+    {time:'2:00',  dur:15, label:'Walk / reset', cat:'admin', icon:'🚶', note:'Mandatory.'},
+    {section:'Afternoon'},
+    {time:'2:15',  dur:75, label:'PulseTrack — Gold tests + README update', cat:'pulse', icon:'💡', note:'Write full test suite for week\'s Gold tables. Update GitHub README Mermaid diagram.'},
+    {time:'3:30',  dur:60, label:'Ghost Apply — weekly overhaul prep', cat:'ghost', icon:'🔧', note:'Prep Saturday\'s full audit: log bugs to fix, prompts to tune, companies to add.'},
+    {time:'4:30',  dur:30, label:'MAANG — mock interview prep (pick LC hard)', cat:'maang', icon:'🎯', note:'Pick 1 hard. Attempt 20 min max. Watch solution. Internalize the pattern.'},
+    {time:'5:00',  dur:30, label:'Week retro — track all metrics', cat:'admin', icon:'📋', note:'Apps sent, commits, MAANG problems, posts, VisaBridge screens. Honest numbers only.'},
+    {wall:true},
+  ],
+  Sat: [
+    {section:'Morning'},
+    {time:'8:00', dur:45, label:'Wake + weekly review', cat:'admin', icon:'☕', note:'Compare weekly metrics vs targets. Where did you fall short? No excuses, just data.'},
+    {time:'8:45', dur:75, label:'Ghost Apply — full pipeline overhaul', cat:'ghost', icon:'🔧', note:'Fix recurring DAG failures. Cost-per-app audit. Update Apollo filters + company list.'},
+    {time:'10:00',dur:30, label:'LinkedIn post + batch write (3 posts)', cat:'linkedin', icon:'✍️', note:'Publish today\'s post. Pre-write 3 posts for next week as buffer.'},
+    {section:'MAANG mock'},
+    {time:'10:30',dur:120,label:'Full mock interview — timed 45 min', cat:'maang', icon:'🎤', note:'LeetCode or Pramp. Timed. No hints. Full debrief after: what broke, fix it, clean rewrite.'},
+    {time:'12:30',dur:30, label:'Lunch', cat:'admin', icon:'🍱', note:'No laptop.'},
+    {section:'Afternoon sprint'},
+    {time:'1:00', dur:120,label:'VisaBridge — big feature sprint', cat:'visa', icon:'🛂', note:'Longer uninterrupted block. Ship a complete screen. Deploy + QA on mobile.'},
+    {time:'3:00', dur:90, label:'PulseTrack — Gold table big push', cat:'pulse', icon:'💡', note:'Target: complete 1 full Gold table with all tests passing. Commit + push.'},
+    {time:'4:30', dur:60, label:'Manual targeted job applications', cat:'ghost', icon:'🎯', note:'Cap-exempt, healthcare, fintech. 3–5 tailored. Real cover letters, not templates.'},
+    {wall:true},
+  ],
+  Sun: [
+    {section:'Morning'},
+    {time:'8:00', dur:60, label:'Slow morning — screens off 30 min', cat:'admin', icon:'☕', note:'Eat. Think. Plan the week mentally before opening any app.'},
+    {time:'9:00', dur:90, label:'MAANG — behavioral deep dive', cat:'maang', icon:'🧠', note:'Your weakest area. Record yourself doing 3 full STAR stories. Watch playback. Fix gaps.'},
+    {time:'10:30',dur:30, label:'LinkedIn post + engagement', cat:'linkedin', icon:'✍️', note:'Post + reply to all comments from the week. Engage 10 posts in feed.'},
+    {time:'11:00',dur:90, label:'VisaBridge or PulseTrack — whichever is behind', cat:'visa', icon:'⚡', note:'Check Friday\'s retro. Pick the one that missed its weekly target.'},
+    {section:'Afternoon'},
+    {time:'12:30',dur:45, label:'Lunch + full break', cat:'admin', icon:'🍱', note:'Walk outside. No code. No phone.'},
+    {time:'1:15', dur:60, label:'Ghost Apply — week config & targeting', cat:'ghost', icon:'🔧', note:'Update Groq prompts, Apollo filters, target list for Mon–Fri. Set weekly app target.'},
+    {time:'2:15', dur:45, label:'LinkedIn — connections + DMs', cat:'linkedin', icon:'🔗', note:'Send 15 tiered connection requests. Reply DMs. Accept relevant requests.'},
+    {time:'3:00', dur:90, label:'Week plan — set Monday targets', cat:'admin', icon:'📋', note:'Set concrete targets: 50 apps, 10 MAANG problems, 7 posts, 3 commits, 1 screen shipped.'},
+    {time:'4:30', dur:60, label:'Buffer / overflow / genuine rest', cat:'admin', icon:'🔧', note:'Catch anything that slipped. Or full stop — protect Sunday energy for the week.'},
+    {wall:true},
+  ],
+};
+
+// ── STATE ──
+const todayIdx = new Date().getDay(); // 0=Sun
+const dayKeys = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let currentDay = dayKeys[todayIdx];
+let notificationsOn = false;
+let notifTimer = null;
+
+function storageKey(day) { return 'saran_done_' + day + '_' + new Date().toDateString(); }
+
+function loadDone(day) {
+  try { return JSON.parse(localStorage.getItem(storageKey(day)) || '{}'); } catch { return {}; }
+}
+function saveDone(day, done) {
+  try { localStorage.setItem(storageKey(day), JSON.stringify(done)); } catch {}
+}
+
+let doneMap = loadDone(currentDay);
+
+// ── RENDER ──
+function render() {
+  renderTabs();
+  renderBlocks();
+  renderStats();
+  updateNextUp();
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('dayTabs');
+  tabs.innerHTML = dayKeys.map((d,i) => {
+    const isToday = i === todayIdx;
+    const isActive = d === currentDay;
+    return `<button class="day-tab${isActive?' active':''}${isToday?' today':''}" onclick="switchDay('${d}')">${d}</button>`;
+  }).join('');
+
+  const now = new Date();
+  document.getElementById('datePill').textContent = now.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+function getBlocks(day) {
+  return SCHEDULE[day].filter(b => b.time);
+}
+
+function renderBlocks() {
+  const sched = SCHEDULE[currentDay];
+  let blockIdx = 0;
+  document.getElementById('blocks').innerHTML = sched.map(b => {
+    if (b.wall) return `<div class="wall-block"><div class="wall-icon">🏸</div><div class="wall-text"><div class="wall-title">5:30 PM — Physical block. Locked.</div><div class="wall-sub">Jog + badminton + dinner + wind-down until 12 AM. No work.</div></div></div>`;
+    if (b.section) return `<div class="section-label">${b.section}</div>`;
+    const i = blockIdx++;
+    const isDone = !!doneMap[i];
+    return `<div class="block cat-${b.cat}${isDone?' done':''}" onclick="toggleBlock(${i})">
+      <div class="block-check">
+        <svg class="checkmark" viewBox="0 0 10 10" fill="none">
+          <path d="M1.5 5L4 7.5L8.5 2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="block-body">
+        <div class="block-title">${b.label}</div>
+        <div class="block-time">${b.time} · ${mL(b.dur)}</div>
+        ${b.note ? `<div class="block-note">${b.note}</div>` : ''}
+      </div>
+      <div class="block-dur">${mL(b.dur)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderStats() {
+  const blocks = getBlocks(currentDay);
+  const total = blocks.length;
+  const done = Object.values(doneMap).filter(Boolean).length;
+  const pct = total ? Math.round((done/total)*100) : 0;
+
+  document.getElementById('progressCount').textContent = done + ' / ' + total;
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  let focusMins = 0;
+  blocks.forEach(b => {
+    if (['maang','visa','pulse'].includes(b.cat)) focusMins += b.dur;
+  });
+
+  const ghostMins = blocks.filter(b=>b.cat==='ghost').reduce((s,b)=>s+b.dur,0);
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat"><div class="stat-label">focus hrs</div><div class="stat-val" style="color:var(--maang)">${(focusMins/60).toFixed(1)}h</div></div>
+    <div class="stat"><div class="stat-label">ghost time</div><div class="stat-val" style="color:var(--ghost)">${mL(ghostMins)}</div></div>
+    <div class="stat"><div class="stat-label">done</div><div class="stat-val" style="color:var(--physical)">${pct}%</div></div>
+  `;
+}
+
+function updateNextUp() {
+  if (currentDay !== dayKeys[todayIdx]) {
+    document.getElementById('nextUp').classList.add('hidden');
+    return;
+  }
+  const now = new Date();
+  const nowMins = now.getHours()*60 + now.getMinutes();
+  const blocks = getBlocks(currentDay);
+
+  const next = blocks.find(b => {
+    const [h,m] = b.time.split(':').map(Number);
+    return (h*60+m) > nowMins;
+  });
+
+  const nextUp = document.getElementById('nextUp');
+  if (next) {
+    document.getElementById('nextTitle').textContent = next.label;
+    document.getElementById('nextTime').textContent = next.time;
+    nextUp.classList.remove('hidden');
+  } else {
+    nextUp.classList.add('hidden');
+  }
+}
+
+// ── INTERACTIONS ──
+function switchDay(d) {
+  currentDay = d;
+  doneMap = loadDone(d);
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function toggleBlock(i) {
+  doneMap[i] = !doneMap[i];
+  saveDone(currentDay, doneMap);
+  renderBlocks();
+  renderStats();
+}
+
+// ── NOTIFICATIONS ──
+async function toggleNotifications() {
+  if (notificationsOn) {
+    notificationsOn = false;
+    clearTimeout(notifTimer);
+    document.getElementById('notifyBtn').className = 'notify-btn';
+    document.getElementById('notifyBtn').textContent = '🔔 reminders';
+    return;
+  }
+  if (!('Notification' in window)) { alert('Notifications not supported in this browser.'); return; }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') { alert('Please allow notifications to enable reminders.'); return; }
+  notificationsOn = true;
+  document.getElementById('notifyBtn').className = 'notify-btn on';
+  document.getElementById('notifyBtn').textContent = '🔔 on';
+  scheduleNextNotification();
+}
+
+function scheduleNextNotification() {
+  if (!notificationsOn) return;
+  const day = dayKeys[new Date().getDay()];
+  const now = new Date();
+  const nowMins = now.getHours()*60 + now.getMinutes();
+  const blocks = getBlocks(day);
+
+  const next = blocks.find(b => {
+    const [h,m] = b.time.split(':').map(Number);
+    return (h*60+m) > nowMins;
+  });
+
+  if (!next) return;
+  const [h,m] = next.time.split(':').map(Number);
+  const targetMs = new Date();
+  targetMs.setHours(h, m, 0, 0);
+  const msUntil = targetMs - now;
+  if (msUntil <= 0) return;
+
+  notifTimer = setTimeout(() => {
+    new Notification('⏰ ' + next.label, {
+      body: next.time + ' · ' + mL(next.dur) + (next.note ? '\n' + next.note : ''),
+      icon: 'https://emojicdn.elk.sh/⏰',
+      badge: 'https://emojicdn.elk.sh/📋',
+    });
+    setTimeout(scheduleNextNotification, 60000);
+  }, msUntil);
+}
+
+// ── INIT ──
+render();
+setInterval(updateNextUp, 60000);
+</script>
+</body>
+</html>
